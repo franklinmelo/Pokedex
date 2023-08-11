@@ -20,7 +20,7 @@ final class PokedexViewModel: PokedexViewModelDelegate {
         guard !searchText.isEmpty else { return pokemons }
         
         return pokemons.filter {
-            $0.name.lowercased().contains(searchText.lowercased())
+            $0.name.lowercased().contains(searchText.lowercased()) || String($0.id).contains(searchText)
         }
     }
     
