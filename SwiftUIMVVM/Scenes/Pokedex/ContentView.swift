@@ -7,20 +7,6 @@
 
 import SwiftUI
 
-struct TypeView: View {
-    var types: [PokemonType]
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            ForEach(types) { type in
-                Text(type.type.name).padding(6)
-                    .background(type.getTypeColor())
-                    .cornerRadius(10)
-            }
-        }
-    }
-}
-
 struct TView: View {
     var body: some View {
         Text("Present").padding(6)
@@ -35,43 +21,30 @@ struct ContentView<T: PokedexViewModelDelegate>: View {
     
     var body: some View {
         NavigationView {
-            GeometryReader { geometry in
-                ScrollView {
-                    ForEach(viewModel.filteredPokemons) { value in
+            ScrollView {
+                ForEach(viewModel.filteredPokedex) { value in
                         NavigationLink {
                             // destination view to navigation to
-                            TypeView(types: value.types)
+                            PokemonDetailsView(viewModel: PokemonDetailsViewModel(service: PokedexService()), url: value.url)
                         } label: {
-                            HStack(spacing: 24) {
-                                let url = URL(string: value.sprites.imgUrl)
-                                AsyncImage(url: url) {
-                                    $0.scaledToFit()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .background(Color.gray.opacity(0.7))
-                                .cornerRadius(100)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("#\(value.id) \(value.name)").font(.title)
-                                    
-                                    TypeView(types: value.types)
-                                }
+                            HStack(spacing: 16) {
+                                Image(systemName: "gamecontroller")
+                                Text(value.name)
+                                    .font(.title3.bold())
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(.foreground, lineWidth: 5)
-                            )
+                            .overlay {
+                                Rectangle()
+                                    .stroke(lineWidth: 2)
+                            }
+                            Spacer(minLength: 12)
                         }
                         .buttonStyle(.plain)
-                        Spacer(minLength: 24)
-                    }
                 }
-                .padding(.horizontal, 16)
-                .scrollIndicators(.hidden)
             }
+            .padding(.horizontal, 16)
+            .scrollIndicators(.hidden)
             .toolbar {
                 Button {
                     showSheet.toggle()
@@ -87,7 +60,7 @@ struct ContentView<T: PokedexViewModelDelegate>: View {
             .searchable(text: $viewModel.searchText)
             .navigationTitle("Pokedex")
             .task {
-                await viewModel.getAllPokemons(start: 1, limit: 151)
+                await viewModel.getPokemonList()
             }
         }
     }

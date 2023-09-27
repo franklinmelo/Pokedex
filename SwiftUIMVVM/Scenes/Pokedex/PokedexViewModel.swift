@@ -9,19 +9,19 @@ import Foundation
 
 protocol PokedexViewModelDelegate: ObservableObject {
     var searchText: String { get set }
-    var filteredPokemons: [Pokemon] { get }
-    func getAllPokemons(start: Int, limit: Int) async
+    var filteredPokedex: [PokemonList] { get }
+    func getPokemonList() async
 }
 
 final class PokedexViewModel: PokedexViewModelDelegate {
-    @Published var pokemons: [Pokemon] = []
+    @Published var pokedex: Pokedex?
     @Published internal var searchText = ""
-    var filteredPokemons: [Pokemon] {
-        guard !searchText.isEmpty else { return pokemons }
+    var filteredPokedex: [PokemonList] {
+        guard !searchText.isEmpty else { return pokedex?.results ?? [] }
         
-        return pokemons.filter {
-            $0.name.lowercased().contains(searchText.lowercased()) || String($0.id).contains(searchText)
-        }
+        return pokedex?.results.filter {
+            $0.name.lowercased().contains(searchText.lowercased())
+        } ?? []
     }
     
     let service: PokedexServicing
@@ -31,13 +31,11 @@ final class PokedexViewModel: PokedexViewModelDelegate {
     }
     
     @MainActor
-    func getAllPokemons(start: Int, limit: Int) async {
-        await (start...limit).asyncForEach {
-            do {
-                pokemons.append(try await service.fetchPokemon(with: String($0)))
-            } catch {
-                print(error)
-            }
+    func getPokemonList() async {
+        do {
+            pokedex = try await service.fetchAllPokemons()
+        } catch {
+            print(error)
         }
     }
 }

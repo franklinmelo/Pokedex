@@ -9,7 +9,24 @@ import Foundation
 import SwiftUI
 
 struct Pokedex: Decodable {
-    let results: [Pokemon]
+    let results: [PokemonList]
+}
+
+struct PokemonList: Decodable, Identifiable {
+    var id: UUID = UUID()
+    let name: String
+    let url: String
+    
+    enum CodingKeys: String, CodingKey {
+        case name
+        case url
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        url = try container.decode(String.self, forKey: .url)
+    }
 }
 
 struct Pokemon: Decodable, Identifiable {
