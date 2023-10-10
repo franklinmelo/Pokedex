@@ -22,23 +22,20 @@ struct ContentView<T: PokedexViewModelDelegate>: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                ForEach(viewModel.filteredPokedex) { value in
+                ForEach(Array(viewModel.filteredPokedex.enumerated()), id: \.offset) { id, value in
                         NavigationLink {
                             // destination view to navigation to
                             PokemonDetailsView(viewModel: PokemonDetailsViewModel(service: PokedexService()), url: value.url)
                         } label: {
                             HStack(spacing: 16) {
+                                Text("# \(String(format: "%03d", id + 1))")
+                                    .font(.title3.bold())
                                 Image(systemName: "gamecontroller")
                                 Text(value.name)
                                     .font(.title3.bold())
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .overlay {
-                                Rectangle()
-                                    .stroke(lineWidth: 2)
-                            }
-                            Spacer(minLength: 12)
                         }
                         .buttonStyle(.plain)
                 }
